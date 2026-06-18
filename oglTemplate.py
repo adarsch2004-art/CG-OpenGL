@@ -218,7 +218,13 @@ class Scene:
         print("Anzahl Edges:", anzahl_edges)
 
         # 2. Load geometry and normals in buffer objects
-        
+        normals=np.array(vn,dtype=np.float32)
+        normal_buffer = glGenBuffers(1)
+        glBindBuffer(GL_ARRAY_BUFFER, normal_buffer)
+        glBufferData(GL_ARRAY_BUFFER, normals.nbytes, normals, GL_STATIC_DRAW)
+        glVertexAttribPointer(2, 3, GL_FLOAT, GL_FALSE, 0, None)
+        glEnableVertexAttribArray(2)
+
 
 
         # generate vertex array object

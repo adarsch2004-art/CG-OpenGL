@@ -2,6 +2,7 @@
 
 layout (location=0) in vec4 v_position;
 layout (location=1) in vec3 v_color;
+layout (location=2) in vec3 v_normal;
 uniform mat4 modelview_projection_matrix;
 out vec3 v2f_color;
 

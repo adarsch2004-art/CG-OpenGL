@@ -218,13 +218,6 @@ class Scene:
         print("Anzahl Edges:", anzahl_edges)
 
         # 2. Load geometry and normals in buffer objects
-        normals=np.array(vn,dtype=np.float32)
-        normal_buffer = glGenBuffers(1)
-        glBindBuffer(GL_ARRAY_BUFFER, normal_buffer)
-        glBufferData(GL_ARRAY_BUFFER, normals.nbytes, normals, GL_STATIC_DRAW)
-        glVertexAttribPointer(2, 3, GL_FLOAT, GL_FALSE, 0, None)
-        glEnableVertexAttribArray(2)
-
 
 
         # generate vertex array object
@@ -249,6 +242,24 @@ class Scene:
         positions=positions-center
         positions=positions/max_size
 
+
+        render_positions=[]
+        render_normals=[]
+
+        for dreieck in dreiecke:
+            for point in dreieck:
+                vertex_index= point[0] - 1
+
+                render_positions.append(positions[vertex_index])
+
+                if point[2] is not None:
+                    normal_index= point[2] - 1
+                    render_normals.append(vn[normal_index])
+                else:
+                    render_normals.append(vn[vertex_index])
+
+        positions = np.array(render_positions,dtype=np.float32)
+
         pos_buffer = glGenBuffers(1)
         glBindBuffer(GL_ARRAY_BUFFER, pos_buffer)
         glBufferData(GL_ARRAY_BUFFER, positions.nbytes, positions, GL_STATIC_DRAW)
@@ -272,14 +283,18 @@ class Scene:
         glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 0, None)
         glEnableVertexAttribArray(1)
 
+        #normals buffer
+        normals=np.array(render_normals,dtype=np.float32)
+        normal_buffer = glGenBuffers(1)
+        glBindBuffer(GL_ARRAY_BUFFER, normal_buffer)
+        glBufferData(GL_ARRAY_BUFFER, normals.nbytes, normals, GL_STATIC_DRAW)
+        glVertexAttribPointer(2, 3, GL_FLOAT, GL_FALSE, 0, None)
+        glEnableVertexAttribArray(2)
+
         # generate index buffer (for triangle strip)
         #self.indices = np.array([0, 1, 2, 3, 0, 1], dtype=np.int32)
-        indices=[]
-        for dreieck in dreiecke:
-            for point in dreieck:
-                vertex_index=point[0]-1
-                indices.append(vertex_index)
-        self.indices=np.array(indices, dtype=np.uint32)
+        self.indices = np.arange(len(positions), dtype=np.uint32)
+
 
         ind_buffer_object = glGenBuffers(1)
         glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ind_buffer_object)
@@ -297,7 +312,7 @@ class Scene:
 
 
     def draw(self):
-        glPolygonMode(GL_FRONT_AND_BACK,GL_LINE)
+        glPolygonMode(GL_FRONT_AND_BACK,GL_FILL)
         # TODO:
         # 1. Render geometry 
         #    (a) just as a wireframe model and 
@@ -320,14 +335,20 @@ class Scene:
         view       = look_at(0,0,2, 0,0,0, 0,1,0)
         model      = rotate_y(self.angle)
         mvp_matrix = projection @ view @ model
+        
+        modelview_matrix= view @ model
 
         # enable shader & set uniforms
         glUseProgram(self.shader_program)
         
         # determine location of uniform variable varName
-        varLocation = glGetUniformLocation(self.shader_program, 'modelview_projection_matrix')
+        varLocationMVP = glGetUniformLocation(self.shader_program, 'modelview_projection_matrix')
+        
+        varLocationMV = glGetUniformLocation(self.shader_program, 'modelview_matrix')
         # pass value to shader
-        glUniformMatrix4fv(varLocation, 1, GL_TRUE, mvp_matrix)
+        glUniformMatrix4fv(varLocationMVP, 1, GL_TRUE, mvp_matrix)
+
+        glUniformMatrix4fv(varLocationMV, 1, GL_TRUE, modelview_matrix)
 
         # enable vertex array & draw triangle(s)
         glBindVertexArray(self.vertex_array)

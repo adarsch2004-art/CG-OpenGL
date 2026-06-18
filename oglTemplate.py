@@ -210,6 +210,13 @@ class Scene:
             
             vn=berechne_normalen
 
+        print("Texturkoordinaten vorhanden:", hat_vt)
+        print("Normalen vorhanden:", hat_vn)
+        print("Maximale Anzahl Ecken pro Polygon:", anzahl_ecken)
+        print("Anzahl Vertices:", anzahl_vertices)
+        print("Anzahl Faces:", anzahl_faces)
+        print("Anzahl Edges:", anzahl_edges)
+
         # 2. Load geometry and normals in buffer objects
         
 
@@ -226,6 +233,16 @@ class Scene:
            #                     ], dtype=np.float32)
         positions = np.array(v,dtype=np.float32)
         
+        minimum=positions.min(axis=0)
+        maximum=positions.max(axis=0)
+
+        center=(minimum+maximum)/2.0
+        size=maximum-minimum
+        max_size =np.max(size)
+
+        positions=positions-center
+        positions=positions/max_size
+
         pos_buffer = glGenBuffers(1)
         glBindBuffer(GL_ARRAY_BUFFER, pos_buffer)
         glBufferData(GL_ARRAY_BUFFER, positions.nbytes, positions, GL_STATIC_DRAW)
@@ -233,11 +250,16 @@ class Scene:
         glEnableVertexAttribArray(0)
  
         # generate and fill buffer with vertex colors (attribute 1)
-        colors = np.array([ 1.0, 0.0, 0.0, # 0. color
-                            0.0, 1.0, 0.0, # 1. color
-                            0.0, 0.0, 1.0, # 2. color
-                            1.0, 1.0, 1.0  # 3. color
-                            ], dtype=np.float32)
+        #colors = np.array([ 1.0, 0.0, 0.0, # 0. color
+         #                   0.0, 1.0, 0.0, # 1. color
+          #                  0.0, 0.0, 1.0, # 2. color
+           #                 1.0, 1.0, 1.0  # 3. color
+            #                ], dtype=np.float32)
+        colors=np.zeros_like(positions, dtype=np.float32)
+        colors[:,0]=0.8
+        colors[:,1]=0.8
+        colors[:,2]=0.8
+
         col_buffer = glGenBuffers(1)
         glBindBuffer(GL_ARRAY_BUFFER, col_buffer)
         glBufferData(GL_ARRAY_BUFFER, colors.nbytes, colors, GL_STATIC_DRAW)
@@ -269,6 +291,7 @@ class Scene:
 
 
     def draw(self):
+        glPolygonMode(GL_FRONT_AND_BACK,GL_LINE)
         # TODO:
         # 1. Render geometry 
         #    (a) just as a wireframe model and 
@@ -302,7 +325,8 @@ class Scene:
 
         # enable vertex array & draw triangle(s)
         glBindVertexArray(self.vertex_array)
-        glDrawElements(GL_TRIANGLE_STRIP, self.indices.nbytes//4, GL_UNSIGNED_INT, None)
+        #glDrawElements(GL_TRIANGLE_STRIP, self.indices.nbytes//4, GL_UNSIGNED_INT, None)
+        glDrawElements(GL_TRIANGLES, len(self.indices), GL_UNSIGNED_INT,None)
 
         # unbind the shader and vertex array state
         glUseProgram(0)

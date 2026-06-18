@@ -27,6 +27,7 @@
 import glfw
 import numpy as np
 import math
+import sys
 
 from OpenGL.GL import *
 from OpenGL.arrays.vbo import VBO
@@ -218,12 +219,12 @@ class Scene:
         glBindVertexArray(self.vertex_array)
 
         # generate and fill buffer with vertex positions (attribute 0)
-        positions = np.array([  0.0,  0.58,  0.0, # 0. vertex
-                               -0.5, -0.29,  0.0, # 1. vertex
-                                0.5, -0.29,  0.0, # 2. vertex
-                                0.0,  0.00, -0.58 # 3. vertex
-                                ], dtype=np.float32)
-
+        #positions = np.array([  0.0,  0.58,  0.0, # 0. vertex
+        #                       -0.5, -0.29,  0.0, # 1. vertex
+         #                       0.5, -0.29,  0.0, # 2. vertex
+          #                      0.0,  0.00, -0.58 # 3. vertex
+           #                     ], dtype=np.float32)
+        positions = np.array(v,dtype=np.float32)
         
         pos_buffer = glGenBuffers(1)
         glBindBuffer(GL_ARRAY_BUFFER, pos_buffer)
@@ -244,7 +245,14 @@ class Scene:
         glEnableVertexAttribArray(1)
 
         # generate index buffer (for triangle strip)
-        self.indices = np.array([0, 1, 2, 3, 0, 1], dtype=np.int32)        
+        #self.indices = np.array([0, 1, 2, 3, 0, 1], dtype=np.int32)
+        indices=[]
+        for dreieck in dreiecke:
+            for point in dreieck:
+                vertex_index=point[0]-1
+                indices.append(vertex_index)
+        self.indices=np.array(indices, dtype=np.uint32)
+
         ind_buffer_object = glGenBuffers(1)
         glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ind_buffer_object)
         glBufferData(GL_ELEMENT_ARRAY_BUFFER, self.indices.nbytes, self.indices, GL_STATIC_DRAW)

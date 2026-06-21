@@ -51,6 +51,7 @@ class Scene:
         self.angle_increment    = 1
         self.animate            = False
         self.shading_mode = 0
+        self.projection_mode = 0
 
 
     def init_GL(self):
@@ -335,7 +336,12 @@ class Scene:
             self.angle += self.angle_increment
     
         # setup matrices
-        projection = perspective(45.0, self.width/self.height, 1.0, 5.0)
+        #projection = perspective(45.0, self.width/self.height, 1.0, 5.0)
+        aspect = self.width/self.height
+        if self.projection_mode == 0:
+            projection = perspective(45.0, aspect, 1.0, 5.0)
+        else:
+            projection = ortho(-aspect, aspect, -1.0, 1.0, 1.0, 5.0)
         view       = look_at(0,0,2, 0,0,0, 0,1,0)
         model      = rotate_y(self.angle)
         mvp_matrix = projection @ view @ model
@@ -445,6 +451,7 @@ class RenderWindow:
                 self.scene.animate = not self.scene.animate
             if key == glfw.KEY_P:
                 # TODO:
+                self.scene.projection_mode = (self.scene.projection_mode + 1) % 2
                 print("toggle projection: orthographic / perspective ")
             if key == glfw.KEY_S:
                 # TODO:

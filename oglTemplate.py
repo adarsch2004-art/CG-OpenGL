@@ -50,6 +50,7 @@ class Scene:
         self.angle              = 0
         self.angle_increment    = 1
         self.animate            = False
+        self.shading_mode = 0
 
 
     def init_GL(self):
@@ -312,13 +313,16 @@ class Scene:
 
 
     def draw(self):
-        glPolygonMode(GL_FRONT_AND_BACK,GL_FILL)
         # TODO:
         # 1. Render geometry 
         #    (a) just as a wireframe model and 
         #    with 
         #    (b) a shader that realize Gouraud Shading
         #    (c) a shader that realize Phong Shading
+        if self.shading_mode == 0:
+            glPolygonMode(GL_FRONT_AND_BACK, GL_LINE)
+        else:
+            glPolygonMode(GL_FRONT_AND_BACK, GL_FILL)
         # 2. Rotate object around the x, y, z axis using the keys x, y, z
         # 3. Rotate object with the mouse by realizing the arcball metaphor as 
         #    well as scaling an translation
@@ -349,6 +353,9 @@ class Scene:
         glUniformMatrix4fv(varLocationMVP, 1, GL_TRUE, mvp_matrix)
 
         glUniformMatrix4fv(varLocationMV, 1, GL_TRUE, modelview_matrix)
+
+        varLocationShading = glGetUniformLocation(self.shader_program, 'shading_mode')
+        glUniform1i(varLocationShading, self.shading_mode)
 
         # enable vertex array & draw triangle(s)
         glBindVertexArray(self.vertex_array)
@@ -441,6 +448,7 @@ class RenderWindow:
                 print("toggle projection: orthographic / perspective ")
             if key == glfw.KEY_S:
                 # TODO:
+                self.scene.shading_mode = (self.scene.shading_mode + 1) % 3
                 print("toggle shading: wireframe, grouraud, phong")
             if key == glfw.KEY_X:
                 # TODO:

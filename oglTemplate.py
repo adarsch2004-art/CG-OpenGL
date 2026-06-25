@@ -52,6 +52,9 @@ class Scene:
         self.animate            = False
         self.shading_mode = 0
         self.projection_mode = 0
+        self.mouse_pressed= False
+        self.last_arcball_point= None
+        self.arcball_matrix= np.identity(4, dtype=np.float32)
 
 
     def init_GL(self):
@@ -312,6 +315,12 @@ class Scene:
         self.width = width
         self.height = height
 
+    def projectOnSphere(self, x, y, r):
+        x, y = x- self.width/2.0, self.height/2.0- y
+        a = min(r*r, x**2 + y**2)
+        z = math.sqrt(r*r- a)
+        l = math.sqrt(x**2 + y**2 + z**2)
+        return np.array([x/l, y/l, z/l], dtype=np.float32)
 
     def draw(self):
         # TODO:
@@ -343,7 +352,7 @@ class Scene:
         else:
             projection = ortho(-aspect, aspect, -1.0, 1.0, 1.0, 5.0)
         view       = look_at(0,0,2, 0,0,0, 0,1,0)
-        model      = rotate_y(self.angle)
+        model = self.arcball_matrix @ rotate_y(self.angle)
         mvp_matrix = projection @ view @ model
         
         modelview_matrix= view @ model
@@ -406,6 +415,7 @@ class RenderWindow:
 
         # set window callbacks
         glfw.set_mouse_button_callback(self.window, self.on_mouse_button)
+        glfw.set_cursor_pos_callback(self.window, self.on_mouse_move)
         glfw.set_key_callback(self.window, self.on_keyboard)
         glfw.set_window_size_callback(self.window, self.on_size)
 
@@ -434,12 +444,42 @@ class RenderWindow:
         # Enable depthtest
         glEnable(GL_DEPTH_TEST)
 
-
     def on_mouse_button(self, win, button, action, mods):
         print("mouse button: ", win, button, action, mods)
         # TODO: realize arcball metaphor for rotations as well as
         #       scaling and translation paralell to the image plane,
         #       with the mouse. 
+        x, y = glfw.get_cursor_pos(win)
+
+        if button == glfw.MOUSE_BUTTON_LEFT and action == glfw.PRESS:
+            self.scene.mouse_pressed = True
+            r = min(self.scene.width, self.scene.height) / 2.0
+            self.scene.last_arcball_point = self.scene.projectOnSphere(x, y, r)
+
+        if button == glfw.MOUSE_BUTTON_LEFT and action == glfw.RELEASE:
+            self.scene.mouse_pressed = False
+            self.scene.last_arcball_point = None
+
+    def on_mouse_move(self, win, x, y):
+        if self.scene.mouse_pressed:
+            r = min(self.scene.width, self.scene.height) / 2.0
+
+            p1 = self.scene.last_arcball_point
+            p2 = self.scene.projectOnSphere(x, y, r)
+
+            axis = np.cross(p1, p2)
+            axis_length = np.linalg.norm(axis)
+
+            if axis_length > 0.0001:
+                dot = np.dot(p1, p2)
+                dot = max(-1.0, min(1.0, dot))
+
+                angle = math.degrees(math.acos(dot))
+
+                rotation = rotate(angle, axis)
+                self.scene.arcball_matrix = rotation @ self.scene.arcball_matrix
+
+            self.scene.last_arcball_point = p2
 
     def on_keyboard(self, win, key, scancode, action, mods):
         print("keyboard: ", win, key, scancode, action, mods)

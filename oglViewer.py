@@ -1,29 +1,3 @@
-"""
-/*******************************************************************************
- *
- *            #, #,         CCCCCC  VV    VV MM      MM RRRRRRR
- *           %  %(  #%%#   CC    CC VV    VV MMM    MMM RR    RR
- *           %    %## #    CC        V    V  MM M  M MM RR    RR
- *            ,%      %    CC        VV  VV  MM  MM  MM RRRRRR
- *            (%      %,   CC    CC   VVVV   MM      MM RR   RR
- *              #%    %*    CCCCCC     VV    MM      MM RR    RR
- *             .%    %/
- *                (%.      Computer Vision & Mixed Reality Group
- *
- ******************************************************************************/
-/**          @copyright:   Hochschule RheinMain,
- *                         University of Applied Sciences
- *              @author:   Prof. Dr. Ulrich Schwanecke
- *             @version:   0.91
- *                @date:   07.06.2022
- ******************************************************************************/
-/**         oglTemplate.py
- *
- *          Simple Python OpenGL program that uses PyOpenGL + GLFW to get an
- *          OpenGL 3.2 core profile context and animate a colored triangle.
- ****
-"""
-
 import glfw
 import numpy as np
 import math
@@ -43,7 +17,7 @@ class Scene:
         OpenGL scene class that render a RGB colored tetrahedron.
     """
 
-    def __init__(self, width, height, scenetitle="Hello Triangle"):
+    def __init__(self, width, height, scenetitle="FHW-Viewer"):
         self.scenetitle         = scenetitle
         self.width              = width
         self.height             = height
@@ -427,7 +401,6 @@ class RenderWindow:
         # set window callbacks
         glfw.set_mouse_button_callback(self.window, self.on_mouse_button)
         glfw.set_cursor_pos_callback(self.window, self.on_mouse_move)
-        glfw.set_cursor_pos_callback(self.window, self.on_mouse_move)
         glfw.set_key_callback(self.window, self.on_keyboard)
         glfw.set_window_size_callback(self.window, self.on_size)
 
@@ -602,3 +575,5 @@ if __name__ == '__main__':
 
     # ... and start main loop
     rw.run()
+
+#python oglViewer.py models\bunny.obj

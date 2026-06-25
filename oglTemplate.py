@@ -289,9 +289,9 @@ class Scene:
            #                 1.0, 1.0, 1.0  # 3. color
             #                ], dtype=np.float32)
         colors=np.zeros_like(positions, dtype=np.float32)
-        colors[:,0]=0.8
-        colors[:,1]=0.8
-        colors[:,2]=0.8
+        colors[:,0]=0.1 #R
+        colors[:,1]=0.45 #G
+        colors[:,2]=0.9 #B
 
         col_buffer = glGenBuffers(1)
         glBindBuffer(GL_ARRAY_BUFFER, col_buffer)

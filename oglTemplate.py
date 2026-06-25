@@ -63,6 +63,8 @@ class Scene:
         self.last_translate_y = 0
         self.translate_x = 0.0
         self.translate_y = 0.0
+        self.key_rotation_matrix = np.identity(4, dtype=np.float32)
+        self.key_rotation_step = 10
 
 
 
@@ -361,7 +363,7 @@ class Scene:
         else:
             projection = ortho(-aspect, aspect, -1.0, 1.0, 1.0, 5.0)
         view       = look_at(0,0,2, 0,0,0, 0,1,0)
-        model = translate(self.translate_x, self.translate_y, 0.0) @ self.arcball_matrix @ rotate_y(self.angle) @ scale(self.zoom, self.zoom, self.zoom)
+        model = translate(self.translate_x, self.translate_y, 0.0) @ self.arcball_matrix @ self.key_rotation_matrix @ rotate_y(self.angle) @ scale(self.zoom, self.zoom, self.zoom)
         mvp_matrix = projection @ view @ model
         
         modelview_matrix= view @ model
@@ -548,12 +550,15 @@ class RenderWindow:
                 print("toggle shading: wireframe, grouraud, phong")
             if key == glfw.KEY_X:
                 # TODO:
+                self.scene.key_rotation_matrix = rotate_x(self.scene.key_rotation_step) @ self.scene.key_rotation_matrix
                 print("rotate: around x-axis")
             if key == glfw.KEY_Y:
                 # TODO:
+                self.scene.key_rotation_matrix = rotate_y(self.scene.key_rotation_step) @ self.scene.key_rotation_matrix
                 print("rotate: around y-axis")
             if key == glfw.KEY_Z:
                 # TODO:
+                self.scene.key_rotation_matrix = rotate_z(self.scene.key_rotation_step) @ self.scene.key_rotation_matrix
                 print("rotate: around z-axis")
 
 

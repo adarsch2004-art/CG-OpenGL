@@ -58,6 +58,12 @@ class Scene:
         self.middle_mouse_pressed = False
         self.last_mouse_y = 0
         self.zoom = 1.0
+        self.right_mouse_pressed = False
+        self.last_translate_x = 0
+        self.last_translate_y = 0
+        self.translate_x = 0.0
+        self.translate_y = 0.0
+
 
 
     def init_GL(self):
@@ -355,7 +361,7 @@ class Scene:
         else:
             projection = ortho(-aspect, aspect, -1.0, 1.0, 1.0, 5.0)
         view       = look_at(0,0,2, 0,0,0, 0,1,0)
-        model = self.arcball_matrix @ rotate_y(self.angle) @ scale(self.zoom, self.zoom, self.zoom)
+        model = translate(self.translate_x, self.translate_y, 0.0) @ self.arcball_matrix @ rotate_y(self.angle) @ scale(self.zoom, self.zoom, self.zoom)
         mvp_matrix = projection @ view @ model
         
         modelview_matrix= view @ model
@@ -471,6 +477,15 @@ class RenderWindow:
         if button == glfw.MOUSE_BUTTON_MIDDLE and action == glfw.RELEASE:
             self.scene.middle_mouse_pressed = False
 
+        if button == glfw.MOUSE_BUTTON_RIGHT and action == glfw.PRESS:
+            self.scene.right_mouse_pressed = True
+            self.scene.last_translate_x = x
+            self.scene.last_translate_y = y
+
+        if button == glfw.MOUSE_BUTTON_RIGHT and action == glfw.RELEASE:
+            self.scene.right_mouse_pressed = False
+
+
     def on_mouse_move(self, win, x, y):
         if self.scene.mouse_pressed:
             r = min(self.scene.width, self.scene.height) / 2.0
@@ -501,6 +516,19 @@ class RenderWindow:
             self.scene.zoom = max(0.1, min(self.scene.zoom, 5.0))
 
             self.scene.last_mouse_y = y
+        
+        if self.scene.right_mouse_pressed:
+            dx = x - self.scene.last_translate_x
+            dy = y - self.scene.last_translate_y
+
+            translation_speed = 2.0 / self.scene.height
+
+            self.scene.translate_x += dx * translation_speed
+            self.scene.translate_y -= dy * translation_speed
+
+            self.scene.last_translate_x = x
+            self.scene.last_translate_y = y
+
 
     def on_keyboard(self, win, key, scancode, action, mods):
         print("keyboard: ", win, key, scancode, action, mods)
